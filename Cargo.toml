@@ -1,0 +1,18 @@
+[package]
+name = "lzf-sys"
+version = "0.1.0"
+authors = ["Magnus Ulimoen <magnus@ulimoen.dev>"]
+edition = "2018"
+build = "build.rs"
+links = "lzf"
+keywords = ["compression", "external-ffi-bindings"]
+license = "MIT OR APACHE AND BSD-2-Clause"
+
+[dependencies]
+
+[build-dependencies]
+cc = { version = "1.0.66", optional = true }
+bindgen = "0.56.0"
+
+[features]
+static = ["cc"]
