@@ -16,7 +16,7 @@ env:
 
 jobs:
   lint:
-    name: lint
+    name: lint + linux
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -45,10 +45,10 @@ jobs:
         with: {toolchain: stable, profile: minimal, override: true}
       - name: Install liblzf
         run: brew install liblzf
-      - name: Build and test system
+      - name: Build and test (system)
+        run: cargo test --no-default-features
+      - name: Build and test (static)
         run: cargo test
-      - name: Build and test static
-        run: cargo test --features static
 
   windows:
     name: windows
@@ -60,5 +60,5 @@ jobs:
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with: {toolchain: stable, profile: minimal, override: true}
-      - name: Build and test (system)
+      - name: Build and test (static)
         run: cargo test
