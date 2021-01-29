@@ -4,7 +4,13 @@
 
 //! Crate for linking to the native c library [liblzf](http://software.schmorp.de/pkg/liblzf.html).
 
+#[cfg(feature = "paranoid")]
 include!(concat!(env!("OUT_DIR"), "/lzf_bindings.rs"));
+
+#[cfg(not(feature = "paranoid"))]
+mod pregenerated;
+#[cfg(not(feature = "paranoid"))]
+pub use pregenerated::*;
 
 #[cfg(test)]
 mod tests {

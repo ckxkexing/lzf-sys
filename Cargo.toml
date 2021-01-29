@@ -12,8 +12,9 @@ license = "MIT OR APACHE AND BSD-2-Clause"
 
 [build-dependencies]
 cc = { version = "1.0.66", optional = true }
-bindgen = "0.56.0"
+bindgen = { version = "0.56.0", optional = true }
 
 [features]
 static = ["cc"]
+paranoid = ["bindgen"]
 default = ["static"]

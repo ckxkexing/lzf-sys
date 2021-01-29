@@ -1,6 +1,6 @@
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
-    let header_path = {
+    let _header_path = {
         #[cfg(feature = "static")]
         {
             println!("cargo:rerun-if-changed=source/lzf_c.c");
@@ -21,13 +21,16 @@ fn main() {
             "wrapper.h"
         }
     };
-    let bindings = bindgen::Builder::default()
-        .header(header_path)
-        .generate()
-        .expect("Could not generate bindings");
+    #[cfg(feature = "paranoid")]
+    {
+        let bindings = bindgen::Builder::default()
+            .header(_header_path)
+            .generate()
+            .expect("Could not generate bindings");
 
-    let out_path = std::path::PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
-    bindings
-        .write_to_file(out_path.join("lzf_bindings.rs"))
-        .expect("Failed to write bindings");
+        let out_path = std::path::PathBuf::from(std::env::var_os("OUT_DIR").unwrap());
+        bindings
+            .write_to_file(out_path.join("lzf_bindings.rs"))
+            .expect("Failed to write bindings");
+    }
 }

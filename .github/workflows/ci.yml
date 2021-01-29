@@ -30,6 +30,8 @@ jobs:
         run: cargo fmt -- --check
       - name: Run clippy
         run: cargo clippy --features static
+      - name: Build and test
+        run: cargo test --features static,paranoid
 
   brew:
     name: brew
@@ -49,6 +51,12 @@ jobs:
         run: cargo test --no-default-features
       - name: Build and test (static)
         run: cargo test
+      - name: Build and test (static,paranoid)
+        run: cargo test --features paranoid
+      - name: Build and test (system)
+        run: cargo clippy --no-default-features
+      - name: Build and test (system,paranoid)
+        run: cargo test --no-default-features --features paranoid
 
   windows:
     name: windows
