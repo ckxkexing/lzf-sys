@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 18 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with: {profile: minimal, toolchain: stable, override: true, components: 'rustfmt, clippy'}
+      - name: Run cargo fmt
+        run: cargo fmt -- --check
+      - name: Run clippy
+        run: cargo clippy --features static
+
+  brew:
+    name: brew
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with: {submodules: true}
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with: {toolchain: stable, profile: minimal, override: true}
+      - name: Install liblzf
+        run: brew install liblzf
+      - name: Build and test system
+        run: cargo test
+      - name: Build and test static
+        run: cargo test --features static
+
+  windows:
+    name: windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with: {submodules: true}
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with: {toolchain: stable, profile: minimal, override: true}
+      - name: Build and test (system)
+        run: cargo test
