@@ -12,7 +12,6 @@ fn main() {
                 .file("source/lzf_d.c")
                 .include("source")
                 .compile("lzf");
-
             "source/lzf.h"
         }
         #[cfg(not(feature = "static"))]
@@ -21,9 +20,12 @@ fn main() {
             "wrapper.h"
         }
     };
+
     #[cfg(feature = "paranoid")]
     {
         let bindings = bindgen::Builder::default()
+            .use_core()
+            .ctypes_prefix("libc")
             .header(_header_path)
             .generate()
             .expect("Could not generate bindings");
