@@ -25,5 +25,6 @@ print $s, "\n";
 my $t = safeDecomp($s);
 
 print "\n", $t, "\n";
-
+print length($s), "\n";
+print length($t), "\n";
 print ord (substr($s,0,1)), "\n";

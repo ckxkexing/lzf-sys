@@ -7,7 +7,8 @@ The library can be built statically using the crate feature `static`. License is
 ========================chenkx: to more like [Compress::LZF](https://metacpan.org/pod/Compress::LZF) in perl========================
 
 - [x] decompress function
-- [ ] compress function
+- [x] compress function
+- [ ] compress-best function
 
 
 ```shell

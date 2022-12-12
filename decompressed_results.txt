@@ -1,0 +1,20 @@
+tree 32aa49f1ba6269cd1420f409ad129d1c03c7ab5c
+parent 45c2c1a4c9e63e6d63ee74fe2ae610dc1792212e
+parent 39336982b3e13fa4999c2470d2300e1034cfd9d3
+author Vikas Gupta <7848248+vikasgupta-github@users.noreply.github.com> 1650380146 +0530
+committer GitHub <noreply@github.com> 1650380146 +0530
+gpgsig -----BEGIN PGP SIGNATURE-----
+ 
+ wsBcBAABCAAQBQJiXs1yCRBK7hj4Ov3rIwAASjMIACIFJ1Zt11qHm5Ifzlck3bqh
+ AdRWVAJ6uzkMVbbNfFmV8Q32ba9fpJTgKkTofbErWKx9OsZgoowP/s5Rgx3t31MO
+ kh23AjLw/bpaedn9dOrESzvLTS6ZA6HskEASYSxiP86//5cbjyMqUHFnvy1K3/1o
+ sQ7e3x4lsMiv3d2FW1khGrnFhtY0FnihD9XX5a1KRLVoFUrReHihq+Cqa0USLTkn
+ Zhyu9m1OjtHsuGHtl/pvwbceCDdiWsUS/ubVEnMzVpDPV66f3EPqyK0sjomHKwHL
+ kzDtHvXND+/gU0WkSCyI516FnN7XCmn38v/JyUyLkmDWJMgTdhk1feX3c9+ziZw=
+ =FchN
+ -----END PGP SIGNATURE-----
+ 
+
+Merge pull request #672 from pbkssri/master
+
+Custom Object Detection Training using YOLOv5 Updated in Readme 

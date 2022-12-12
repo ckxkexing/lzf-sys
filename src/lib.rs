@@ -1,7 +1,7 @@
 #![allow(non_upper_case_globals)]
 #![allow(non_camel_case_types)]
 #![allow(non_snake_case)]
-
+#![allow(unused)]
 //! Crate for linking to the native c library [liblzf](http://software.schmorp.de/pkg/liblzf.html).
 
 #[cfg(feature = "paranoid")]
@@ -12,8 +12,83 @@ mod pregenerated;
 #[cfg(not(feature = "paranoid"))]
 pub use pregenerated::*;
 
-#[allow(unused)]
-fn decompress(s:&String) -> Option<String>{
+use std::slice;
+fn compress(s :&String) -> Option<String> {
+    let mut u_size: usize = s.len();
+    let mut c_size: usize = 0;
+    let src = s.as_bytes();
+    let mut sp = 0;
+
+    let cprepend = 0;
+
+    if u_size > 0{
+        let mut output = vec![0_u8; u_size + 1];
+        let mut skip = 0;
+        // unused
+        if cprepend > 0{
+            output[skip] = cprepend;                                 skip += 1;
+        }
+
+        if u_size <= 0x7f{
+            output[skip] = u_size                   as u8;           skip += 1;
+        }
+        else if(u_size <= 0x7ff) {
+            output[skip] = (u_size >>   6)          as u8 | 0xc0;    skip += 1;
+            output[skip] = (u_size & 0x3f)          as u8 | 0x80;    skip += 1;
+        }
+        else if(u_size <= 0xffff) {
+            output[skip] = ( u_size >>  12)         as u8 | 0xe0;    skip += 1;
+            output[skip] = ((u_size >>  6) & 0x3f)  as u8 | 0x80;    skip += 1;
+            output[skip] = ( u_size        & 0x3f)  as u8 | 0x80;    skip += 1;
+        }
+        else if(u_size <= 0x1fffff) {
+            output[skip] = ( u_size >>  18)         as u8 | 0xf0;    skip += 1;
+            output[skip] = ((u_size >>  12) & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ((u_size >>  6)  & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ( u_size         & 0x3f) as u8 | 0x80;    skip += 1;
+        }
+        else if(u_size <= 0x3ffffff) {
+            output[skip] = ( u_size >>  24)         as u8 | 0xf8;    skip += 1;
+            output[skip] = ((u_size >>  18) & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ((u_size >>  12) & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ((u_size >>  6)  & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ( u_size         & 0x3f) as u8 | 0x80;    skip += 1;
+        }
+        else if(u_size <= 0x7fffffff) {
+            output[skip] = ( u_size >>  30)         as u8 | 0xfc;    skip += 1;
+            output[skip] = ((u_size >>  24) & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ((u_size >>  18) & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ((u_size >>  12) & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ((u_size >>   6) & 0x3f) as u8 | 0x80;    skip += 1;
+            output[skip] = ( u_size         & 0x3f) as u8 | 0x80;    skip += 1;
+        }
+        else {
+            return None;
+        }
+        /* 11 bytes is the smallest compressible string */
+        let c_size = if u_size < 11 {0_usize} else {
+            unsafe {
+                lzf_compress(s.as_ptr() as _, u_size as _, output[skip..].as_ptr() as _, (u_size - skip) as _ ) as usize
+            }
+        };
+        if c_size > 0{
+            let o = unsafe{
+                String::from_utf8_unchecked(Vec::from(slice::from_raw_parts(output.as_ptr() as _ , c_size + skip) ))
+            };
+            return Some(o);
+        }
+        else {
+            let mut o = String::from_utf8(vec![0_u8]).unwrap();
+            o.push_str(s);
+            return Some(o);
+        }
+    }
+    else{
+        return Some(String::new());
+    }
+}
+
+fn decompress(s:&String) -> Option<String> {
     let mut c_size : usize = s.len();
     let mut u_size : usize = 0;
     let src = s.as_bytes();
@@ -99,7 +174,7 @@ fn decompress(s:&String) -> Option<String>{
         Some(String::new())
     }
 }
-#[allow(unused)]
+
 // lzf decompress in rust from https://github.com/badboy/lzf-rs/blob/5715fe6571d6ad6da7201253a79ceb7ca411a67a/src/decompress.rs#L20
 fn decompress_in_rust(data: &[u8], out_len_should: usize) -> Vec<u8> {
     let mut current_offset = 0;
@@ -187,6 +262,7 @@ fn decompress_in_rust(data: &[u8], out_len_should: usize) -> Vec<u8> {
     unsafe { output.set_len(out_len) };
     output
 }
+
 #[cfg(test)]
 mod tests {
     #[cfg(feature = "paranoid")]
@@ -221,12 +297,18 @@ mod tests {
 
         assert_eq!(message.as_bytes(), &output[..]);
     }
-    use std::io::Read;
-    use std::io::BufReader;
+
     use std::fs;
-    #[test]
-    fn test_decompress(){
-        let path = "./compressed_results.txt";
+    use std::io::{Error, Read, Write, BufReader};
+    use libc::read;
+
+    fn write_to_file(s:&String) {
+        let path = "./decompressed_results.txt";
+        let mut output = fs::File::create(path).unwrap();
+        write!(output, "{}", s);
+    }
+
+    fn read_from_file(path:&str)->String{
         let f = fs::File::open(path).unwrap();
         let mut reader = BufReader::new(f);
         let mut buffer = Vec::new();
@@ -236,10 +318,29 @@ mod tests {
         let s = unsafe {
             String::from_utf8_unchecked(buffer)
         };
-
-        let res1 = decompress(&s).unwrap();
-        println!("======================================\n{}\n======================================", res1);
-        assert_eq!(res1.len(), 869_usize);
+        return s;
     }
 
+    #[test]
+    fn test_decompress(){
+        let path0 = "./decompressed_results.txt";
+        let path1 = "./compressed_results.txt";
+        let s = read_from_file(path0);
+        let t = read_from_file(path1);
+
+        let new_s = decompress(&t).unwrap();
+
+        assert_eq!(new_s, s);
+    }
+
+    #[test]
+    fn test_compress(){
+        let path0 = "./decompressed_results.txt";
+        let path1 = "./compressed_results.txt";
+        let s = read_from_file(path0);
+        let t = read_from_file(path1);
+
+        let new_t = compress(&s).unwrap();
+        assert_eq!(new_t, t);
+    }
 }
